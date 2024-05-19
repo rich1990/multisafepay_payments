@@ -1,0 +1,60 @@
+<head>
+    <title>HoodieSafepay</title>
+    {% block javascripts %}
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <script src="{{ asset('js/main.js') }}"></script>
+    {% endblock %}
+</head>
+
+<body class="blue lighten-1">
+    <div class="container">
+        <div class="row">
+            <div class="col s12 m6 offset-m3">
+                <h1 class="white-text">HoodieSafepay</h1>
+                <div class="card">
+                    <div class="card-image z-depth-1">
+                        <img src="{{ asset('images/hoodie.jpg') }}"
+                            class="responsive-img"
+                            style="width: 300px; margin: auto"
+                            alt="MultiSafepay Hoodie">
+                        <div class="btn-floating halfway-fab waves-effect waves-light red white-text center">-30%</div>
+                        <input id="price" value="30" type="hidden" required>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-title">MultiSafepay Hoodie</span>
+                        <p>Want to join the MultiSafepay squad? Buy this hoodie!</p>
+                    </div>
+                    <div class="card-action">
+                        <div class="input-field">
+                            <i class="material-icons prefix">add_shopping_cart</i>
+                            <input id="quantity" class="validate" value="1" type="number" required>
+                            <label class="active" for="quantity">Quantity</label>
+                        </div>
+                    </div>
+                </div>
+                <button id="checkoutBtn" class="btn btn-info" style="width: 100%">
+                    Checkout!
+                </button>
+            </div>
+
+            <!-- Include the modal template -->
+            {% include 'modal.html.twig' %}
+
+            <div class="page-footer blue z-depth-1">
+                <div class="container">
+                    <div class="row">
+                    </div>
+                </div>
+                <div class="footer-copyright">
+                    <div class="container center">
+                        © 2019 <a href="https://github.com/MultiSafepay" class="white-text">MultiSafepay</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>

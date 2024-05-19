@@ -1,0 +1,42 @@
+<head>
+    <title>HoodieSafepay</title>
+    {% block javascripts %}
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <script src="{{ asset('js/main.js') }}"></script>
+    {% endblock %}
+</head>
+
+<body class="blue lighten-1">
+    <div class="container">
+        <div class="row">
+
+            <!-- Display transaction ID after successful transaction -->
+            {% if transactionId is defined %}
+                <div class="col s12 m6 offset-m3">
+                    <div class="card green lighten-2">
+                        <div class="card-content">
+                            <span class="card-title white-text">Transaction ID</span>
+                            <p class="white-text">{{ transactionId }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="page-footer blue z-depth-1">
+                <div class="container">
+                    <div class="row">
+                    </div>
+                </div>
+                <div class="footer-copyright">
+                    <div class="container center">
+                        © 2019 <a href="https://github.com/MultiSafepay" class="white-text">MultiSafepay</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>

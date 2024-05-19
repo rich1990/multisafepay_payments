@@ -1,0 +1,39 @@
+{# templates/modal.html.twig #}
+<div id="modalAddress" class="modal">
+    <div class="modal-content">
+        <h4>Enter Shipping Details</h4>
+        <div class="input-field">
+            <input id="firstname" type="text" class="validate" required>
+            <label for="firstname">First Name</label>
+            <span class="helper-text" data-error="This field is required"></span>
+        </div>
+        <div class="input-field">
+            <input id="lastname" type="text" class="validate" required>
+            <label for="lastname">Last Name</label>
+            <span class="helper-text" data-error="This field is required"></span>
+        </div>
+        <div class="input-field">
+            <input id="address_line" type="text" class="validate" required>
+            <label for="address_line">Address Line</label>
+            <span class="helper-text" data-error="This field is required"></span>
+        </div>
+        <div class="input-field">
+            <input id="number" type="text" class="validate" value="29" required>
+            <label for="number">Number</label>
+            <span class="helper-text" data-error="This field is required"></span>
+        </div>
+        <div class="input-field">
+            <input id="city" type="text" class="validate" required>
+            <label for="city">City</label>
+            <span class="helper-text" data-error="This field is required"></span>
+        </div>
+        <div class="input-field">
+            <input id="postal_code" type="text" class="validate" value="1033SC" required>
+            <label for="postal_code">Postal Code</label>
+            <span class="helper-text" data-error="This field is required"></span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button id="submitPopupBtn" class="waves-effect waves-green btn-flat">Submit</button>
+    </div>
+</div>
