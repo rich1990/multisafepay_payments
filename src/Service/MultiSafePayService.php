@@ -82,7 +82,7 @@ class MultiSafePayService
 
             $paymentOptions = (new PaymentOptions())
                 ->addNotificationUrl('http://multisafepay.test/success')
-                ->addRedirectUrl('http://multisafepay.test/')
+                ->addRedirectUrl('http://multisafepay.test/success')
                 ->addCancelUrl('http://multisafepay.test/')
                 ->addCloseWindow(true);
 
