@@ -50,15 +50,18 @@ class MultiSafePayService
      *
      * @param $product_amount
      * @param $paymentType
+     * @param $quantity
      * @param $addressData
      * @return array
      */
-    public function createOrder($product_amount, $addressData)
+    public function createOrder($product_amount, $quantity, $addressData)
     {
         try {
+            
+            $sub_total = $product_amount * $quantity;
             // Initialize MultiSafepay Client
             $multiSafepaySdk = new Sdk($this->apiKey, false);
-            $tax_amount = (int) $product_amount * $this->taxRateMultiplier; // Amount must be in cents
+            $tax_amount = (int) $sub_total * $this->taxRateMultiplier; // Amount must be in cents
 
             $orderId = (string) time();
             $description = 'Order #' . $orderId;
@@ -79,14 +82,14 @@ class MultiSafePayService
 
             $paymentOptions = (new PaymentOptions())
                 ->addNotificationUrl('http://multisafepay.test/success')
-                ->addRedirectUrl('http://multisafepay.test/success')
-                ->addCancelUrl('http://multisafepay.test/success')
+                ->addRedirectUrl('http://multisafepay.test/')
+                ->addCancelUrl('http://multisafepay.test/')
                 ->addCloseWindow(true);
 
             $items[] = (new Item())
                 ->addName('MultiSafePay hoodie')
                 ->addUnitPrice(new Money($product_amount * 100, 'EUR')) // Amount must be in cents
-                ->addQuantity(1)
+                ->addQuantity($quantity)
                 ->addDescription('COOL MultiSafePay hoodie')
                 ->addTaxRate($this->taxRate)
                 ->addMerchantItemId('1')
@@ -97,7 +100,7 @@ class MultiSafePayService
                 ->addType('redirect')
                 ->addOrderId($orderId)
                 ->addDescriptionText($description)
-                ->addMoney(new Money(($product_amount + $tax_amount) * 100, 'EUR'))
+                ->addMoney(new Money(($sub_total + $tax_amount) * 100, 'EUR'))
                 ->addGatewayCode('IDEAL')
                 ->addCustomer($customer)
                 ->addDelivery($customer)

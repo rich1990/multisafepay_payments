@@ -63,13 +63,15 @@ class CheckoutController extends AbstractController
     {
 
         try {
-            $amount = $request->request->get('total');
+            $amount = $request->request->get('price');
+            $quantity = $request->request->get('quantity');
+
             $paymentType = $request->request->get('payment_type');
             
             $postData = $this->processAddressPostData($request);
 
             // Call the createOrder method from the MultiSafepayService
-            $response = $this->multiSafepayService->createOrder($amount, $postData);
+            $response = $this->multiSafepayService->createOrder($amount, $quantity, $postData);
 
             return new JsonResponse(['success' => true, 'payment_url' => $response['paymentUrl']]);
         } catch (HttpExceptionInterface $e) {
