@@ -8,6 +8,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\MultiSafePayService;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class CheckoutController
@@ -15,16 +18,21 @@ use App\Service\MultiSafePayService;
  */
 class CheckoutController extends AbstractController
 {
-     /** @var MultiSafePayService */
+    /** @var MultiSafePayService */
     private $multiSafepayService;
+
+    /** @var ValidatorInterface */
+    private $validator;
 
     /**
      * CheckoutController constructor.
      * @param MultiSafePayService $multiSafepayService
+     * @param ValidatorInterface $validator
      */
-    public function __construct(MultiSafePayService $multiSafepayService)
+    public function __construct(MultiSafePayService $multiSafepayService, ValidatorInterface $validator)
     {
         $this->multiSafepayService = $multiSafepayService;
+        $this->validator = $validator;
     }
 
     /**
@@ -45,7 +53,6 @@ class CheckoutController extends AbstractController
     #[Route('/success', name: 'checkout_success')]
     public function success(Request $request): Response
     {
-      // Get the transaction ID from the query string
         $transactionId = $request->query->get('transactionid');
 
         return $this->render('checkout/success.html.twig', [
@@ -56,62 +63,104 @@ class CheckoutController extends AbstractController
     /**
      * @param Request $request
      * @return Response
-     * @Route("/process", name="checkout_process")
+     * @Route("/process", name: "checkout_process")
      */
     #[Route('/process', name: 'checkout_process')]
     public function process(Request $request): Response
     {
+        $requestData = $request->request->all();
+
+        // Perform custom validation
+        $validationErrors = $this->validate($requestData);
+
+        if (!empty($validationErrors)) {
+            return new JsonResponse(['success' => false, 'errors' => $validationErrors], Response::HTTP_BAD_REQUEST);
+        }
 
         try {
-            $amount = $request->request->get('price');
-            $quantity = $request->request->get('quantity');
-
-            $paymentType = $request->request->get('payment_type');
-            
-            $postData = $this->processAddressPostData($request);
-
-            // Call the createOrder method from the MultiSafepayService
-            $response = $this->multiSafepayService->createOrder($amount, $quantity, $postData);
+            // Proceed with processing the request
+            $response = $this->multiSafepayService->createOrder(
+                $requestData['price'],
+                $requestData['quantity'],
+                [
+                    'addressLine' => $requestData['address_line'],
+                    'city' => $requestData['city'],
+                    'postalCode' => $requestData['postal_code'],
+                    'firstname' => $requestData['firstname'],
+                    'lastname' => $requestData['lastname'],
+                    'number' => $requestData['number'],
+                ]
+            );
 
             return new JsonResponse(['success' => true, 'payment_url' => $response['paymentUrl']]);
         } catch (HttpExceptionInterface $e) {
-            // If an HTTP exception occurs (e.g., 404, 403), return a JSON response with the error message and status code
             return new JsonResponse(['error' => $e->getMessage()], $e->getStatusCode());
         } catch (\Throwable $e) {
-            // For other types of exceptions, return a JSON response with a generic error message and status code 500
             return new JsonResponse(['error' => 'An error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-      
     }
 
     /**
-     * @param Request $request
-     * @return array
+     * Custom validation method
+     *
+     * @param array $requestData
+     * @return array Array of validation errors
      */
-    private function processAddressPostData(Request $request): array {
-        // Collecting fields from the request
-        $addressLine = $request->request->get('address_line');
-        $number = $request->request->get('number');
-        $city = $request->request->get('city');
-        $postalCode = $request->request->get('postal_code');
-        $country = $request->request->get('country');
-        $paymentType = $request->request->get('payment_type');
-        $firstname = $request->request->get('firstname');
-        $lastname = $request->request->get('lastname');
+    private function validate(array $requestData): array
+    {
+        $validationErrors = [];
 
-        // Organizing the collected fields into an associative array
-        $data = [
-            'addressLine' => $addressLine,
-            'city' => $city,
-            'postalCode' => $postalCode,
-            'country' => $country,
-            'paymentType' => $paymentType,
-            'firstname' => $firstname,
-            'lastname' => $lastname,
-            'number' => $number,
-        ];
+        // Create a validator
+        $validator = $this->validator;
 
-        return $data;
+        // Define constraints for each field
+        $constraints = new Assert\Collection([
+            'price' => [
+                new Assert\NotBlank(),
+                new Assert\Type(['type' => 'numeric', 'message' => 'The price must be a numeric value.']),
+            ],
+            'total' => [
+                new Assert\NotBlank(),
+                new Assert\Type(['type' => 'numeric', 'message' => 'The total must be a numeric value.']),
+            ],
+            'quantity' => [
+                new Assert\NotBlank(),
+                new Assert\Type(['type' => 'numeric', 'message' => 'The quantity must be a numeric value.']),
+            ],
+            'address_line' => [
+                new Assert\NotBlank(['message' => 'The address line is required.']),
+                new Assert\Type(['type' => 'string', 'message' => 'The address line must be a string.']),
+            ],
+            'city' => [
+                new Assert\NotBlank(['message' => 'The city is required.']),
+                new Assert\Type(['type' => 'string', 'message' => 'The city must be a string.']),
+            ],
+            'postal_code' => [
+                new Assert\NotBlank(['message' => 'The postal code is required.']),
+                new Assert\Type(['type' => 'string', 'message' => 'The postal code must be a string.']),
+            ],
+            'firstname' => [
+                new Assert\NotBlank(['message' => 'The first name is required.']),
+                new Assert\Type(['type' => 'string', 'message' => 'The first name must be a string.']),
+            ],
+            'lastname' => [
+                new Assert\NotBlank(['message' => 'The last name is required.']),
+                new Assert\Type(['type' => 'string', 'message' => 'The last name must be a string.']),
+            ],
+            'number' => [
+                new Assert\NotBlank(['message' => 'The number is required.']),
+                new Assert\Type(['type' => 'string', 'message' => 'The number must be a string.']),
+            ],
+        ]);
+
+        // Validate the request data
+        $violations = $validator->validate($requestData, $constraints);
+
+        // Convert violations to validation errors
+        foreach ($violations as $violation) {
+            $validationErrors[] = $violation->getMessage();
+        }
+
+        return $validationErrors;
     }
 }
