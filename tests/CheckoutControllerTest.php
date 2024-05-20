@@ -10,7 +10,16 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  */
 class CheckoutControllerTest extends WebTestCase
 {
-
+    /**
+     * Creates a new instance of the Symfony kernel for testing.
+     *
+     * @param array $options An array of options for creating the kernel.
+     * @return \Symfony\Component\HttpKernel\KernelInterface The newly created kernel instance.
+     */
+    protected static function createKernel(array $options = []): \Symfony\Component\HttpKernel\KernelInterface
+    {
+        return new \App\Kernel('test', true);
+    }
     /**
      * Test for successful processing action.
      */

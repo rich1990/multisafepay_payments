@@ -23,6 +23,10 @@
         </testsuite>
     </testsuites>
 
+    <php>
+    <env name="KERNEL_CLASS" value="App\Kernel" />
+</php>
+
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">src</directory>
