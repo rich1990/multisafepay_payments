@@ -54,15 +54,14 @@ class MultiSafePayService
      * @param $addressData
      * @return array
      */
-    public function createOrder($product_amount, $quantity, $addressData)
-    {
+   public function createOrder(float $product_amount, int $quantity, array $addressData): array
+   {    
         try {
-            
             $sub_total = $product_amount * $quantity;
             // Initialize MultiSafepay Client
             $multiSafepaySdk = new Sdk($this->apiKey, false);
             $tax_amount = (int) $sub_total * $this->taxRateMultiplier; // Amount must be in cents
-
+    
             $orderId = (string) time();
             $description = 'Order #' . $orderId;
             $address = (new Address())
@@ -71,7 +70,7 @@ class MultiSafePayService
                 ->addZipCode($addressData['postalCode'])
                 ->addCity($addressData['city'])
                 ->addCountry(new Country('NL'));
-
+    
             $customer = (new CustomerDetails())
                 ->addFirstName($addressData['firstname'])
                 ->addLastName($addressData['lastname'])
@@ -79,13 +78,13 @@ class MultiSafePayService
                 ->addEmailAddress(new EmailAddress('noreply@example.org'))
                 ->addPhoneNumber(new PhoneNumber('0208500500'))
                 ->addLocale('en_US');
-
+    
             $paymentOptions = (new PaymentOptions())
                 ->addNotificationUrl('http://multisafepay.test/success')
                 ->addRedirectUrl('http://multisafepay.test/success')
                 ->addCancelUrl('http://multisafepay.test/')
                 ->addCloseWindow(true);
-
+    
             $items[] = (new Item())
                 ->addName('MultiSafePay hoodie')
                 ->addUnitPrice(new Money($product_amount * 100, 'EUR')) // Amount must be in cents
@@ -94,8 +93,7 @@ class MultiSafePayService
                 ->addTaxRate($this->taxRate)
                 ->addMerchantItemId('1')
                 ->addWeight(new Weight('KG', 1));
-
-
+    
             $orderRequest = (new OrderRequest())
                 ->addType('redirect')
                 ->addOrderId($orderId)
@@ -106,20 +104,33 @@ class MultiSafePayService
                 ->addDelivery($customer)
                 ->addPaymentOptions($paymentOptions)
                 ->addShoppingCart(new ShoppingCart($items));
-
+    
             /** @var TransactionResponse $transaction */
             $transactionManager = $multiSafepaySdk->getTransactionManager()->create($orderRequest);
             $payment_url = $transactionManager->getPaymentUrl();
-
-            $response = ['paymentUrl' => $payment_url];
+    
+            $response = [
+                'status' => 'success',
+                'paymentUrl' => $payment_url
+            ];
             return $response;
-
+    
         } catch (ApiException $e) {
-            echo 'API Error: ' . $e->getCode() . $e->getMessage();
+            return [
+                'status' => 'error',
+                'message' => 'API Error: ' . $e->getCode() . ' ' . $e->getMessage()
+            ];
         } catch (ConnectionException $e) {
-            echo 'Connection Error: ' . $e->getCode() . $e->getMessage();
+            return [
+                'status' => 'error',
+                'message' => 'Connection Error: ' . $e->getCode() . ' ' . $e->getMessage()
+            ];
         } catch (\Exception $e) {
-            echo 'An error occurred: ' . $e->getCode() . $e->getMessage();
+            return [
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getCode() . ' ' . $e->getMessage()
+            ];
         }
     }
+
 }
